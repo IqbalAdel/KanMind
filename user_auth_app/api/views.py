@@ -1,6 +1,6 @@
 from rest_framework import generics, status
 from user_auth_app.models import UserProfile
-from .serializers import UserProfileSerializer, RegistrationSerializer
+from .serializers import UserProfileSerializer, RegistrationSerializer, EmailAuthTokenSerializer
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token 
@@ -18,6 +18,7 @@ class UserProfileDetail(generics.RetrieveUpdateDestroyAPIView):
 
 class CustomLoginView(ObtainAuthToken):
     permission_classes = [AllowAny]
+    serializer_class = EmailAuthTokenSerializer
 
     def post(self, request):
         serializer = self.serializer_class(data = request.data)
@@ -29,7 +30,8 @@ class CustomLoginView(ObtainAuthToken):
             data = {
                 'token': token.key,
                 'fullname': user.username,
-                'email': user.email
+                'email': user.email,
+                'user_id': user.id,
             }
         else:
             data = serializer.errors
@@ -49,7 +51,7 @@ class RegistrationView(APIView):
             token, created = Token.objects.get_or_create(user = saved_account)
             data = {
                 'token': token.key,
-                'username': saved_account.username,
+                'fullname': saved_account.username,
                 'email': saved_account.email,
                 'user_id': saved_account.id,
             }
