@@ -22,12 +22,10 @@ class EmailAuthTokenSerializer(serializers.Serializer):
 
         if email and password:
             try:
-                # ✅ Find user by email
                 user = User.objects.get(email=email)
             except User.DoesNotExist:
                 raise serializers.ValidationError('Invalid email or password.')
 
-            # ✅ Authenticate user (still checks password)
             user = authenticate(username=user.username, password=password)
             if not user:
                 raise serializers.ValidationError('Invalid email or password.')
@@ -48,7 +46,6 @@ class RegistrationSerializer(serializers.ModelSerializer):
             'password' : {
                 'write_only': True
             },
-            # 'username': {'required': False}
         }
     
     def validate_username(self, value):
@@ -74,11 +71,6 @@ class RegistrationSerializer(serializers.ModelSerializer):
         username = self.validated_data.get('username') or fullname
         account = User(email = self.validated_data['email'], username=username)
         
-        # account = User.objects.create(
-        #     email=self.validated_data['email'],
-        #     username=self.validated_data['username']
-        # )
-        # account.full_clean(exclude=['username'])
         account.set_password(pw)
         account.save()
         profile = UserProfile.objects.create(user=account)

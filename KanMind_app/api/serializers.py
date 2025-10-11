@@ -30,7 +30,6 @@ class TaskDetailSerializer(TaskSerializer):
 
 
 class CommentSerializer(serializers.ModelSerializer):
-    # task = serializers.PrimaryKeyRelatedField(read_only=True)
     author = serializers.PrimaryKeyRelatedField(read_only=True)
     created_at = serializers.DateTimeField(read_only=True)
     class Meta:
@@ -39,8 +38,6 @@ class CommentSerializer(serializers.ModelSerializer):
 
 
 class BoardSerializer(serializers.ModelSerializer):
-    # task = serializers.PrimaryKeyRelatedField(read_only=True)
-    # members = MemberSerializer(many = True, read_only=True)
     member_ids = serializers.PrimaryKeyRelatedField(
         queryset=User.objects.all(),
         many = True,
@@ -50,7 +47,7 @@ class BoardSerializer(serializers.ModelSerializer):
 
     member_count = serializers.SerializerMethodField()
     owner_id = serializers.PrimaryKeyRelatedField(
-        source='user',  # 🔁 maps to the actual field in your model
+        source='user',  
         read_only=True
     )
     tasks_high_prio_count = serializers.SerializerMethodField()
@@ -60,7 +57,6 @@ class BoardSerializer(serializers.ModelSerializer):
     class Meta:
         model = Board
         fields = ['id', 'title', 'member_ids', 'member_count', "ticket_count", "tasks_to_do_count", "tasks_high_prio_count", 'owner_id']
-        # exclude = ['tickets']
 
     def get_member_count(self, obj):
         return obj.members.count()

@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token 
 from rest_framework.response import Response
 from rest_framework.authtoken.views import ObtainAuthToken
-
+from django.contrib.auth.models import User
 
 class UserProfileList(generics.ListCreateAPIView):
     queryset = UserProfile.objects.all()
@@ -64,15 +64,24 @@ class EmailCheckView(APIView):
     # permission_classes = [IsAuthenticated]  # ✅ only logged-in users
 
     def get(self, request):
-        user = request.user
+        email = request.query_params.get('email')
+        user = User.objects.get(email=email)
 
-        if user.is_anonymous:
-            return Response({"detail": "User not authenticated."},
+        if not email:
+            return Response({"detail": "Email query parameter is required."},
                             status=status.HTTP_401_UNAUTHORIZED)
 
-        data = {
-            "id": user.id,
-            "name": user.get_full_name() or user.username,
-            "email": user.email
-        }
-        return Response(data, status=status.HTTP_200_OK)
+        try:
+            data = {
+                "id": user.id,
+                "email": user.email,
+                "fullname": user.username,
+            }
+            return Response(data, status=status.HTTP_200_OK)
+        
+        except User.DoesNotExist:
+            return Response({"detail": "User not found."},
+                            status=status.HTTP_404_NOT_FOUND) 
+
+
+    

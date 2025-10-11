@@ -9,7 +9,6 @@ class BoardsList(generics.ListCreateAPIView):
     serializer_class = BoardSerializer
 
     def perform_create(self, serializer):
-        # Set the creator as the request user; members are handled by serializer via `source='members'`
         board = serializer.save(user=self.request.user)
 
 

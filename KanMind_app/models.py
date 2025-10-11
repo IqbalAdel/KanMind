@@ -5,7 +5,6 @@ from django.contrib.auth.models import User
 
 
 class Board(models.Model):
-    # task = models.ManyToOneRel(Task, )''
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=100)
     members = models.ManyToManyField(User, related_name="members")
