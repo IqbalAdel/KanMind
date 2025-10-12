@@ -8,17 +8,48 @@ class MemberSerializer(serializers.ModelSerializer):
 
 
 class TaskSerializer(serializers.ModelSerializer):
-    assignee = MemberSerializer(read_only=True)
-    reviewer = MemberSerializer(read_only=True)
+    assignee = MemberSerializer(read_only=True, required=False, allow_null=True)
+    reviewer = MemberSerializer(read_only=True, required=False, allow_null=True)
+    assignee_id = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.all(),
+        source='assignee',
+        write_only=True,
+        required=False,
+        allow_null=True
+    )
+    reviewer_id = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.all(),
+        source='reviewer',
+        write_only=True,
+        required=False,
+        allow_null=True
+    )
     comments_count = serializers.SerializerMethodField()
-    
 
     def get_comments_count(self, obj):
         return obj.comments.count()
     class Meta: 
         model = Task
-        fields = ['id', 'board', 'title', 'description', 'status', 'priority', 'assignee', 'reviewer', 'due_date', 'comments_count']
+        fields = ['id', 'board', 'title', 'description', 'status', 'priority','assignee_id','reviewer_id', 'assignee', 'reviewer', 'due_date', 'comments_count']
 
+    def validate(self, attrs):
+        board = attrs.get('board')
+        user = self.context['request'].user
+
+        # Creator must be owner or member
+        if user != board.user and user not in board.members.all():
+            raise serializers.ValidationError("You must be a member or owner of the board to create a task.")
+
+        # Only validate assignee/reviewer if provided
+        assignee = attrs.get('assignee')
+        if assignee and assignee != board.user and assignee not in board.members.all():
+            raise serializers.ValidationError("Assignee must be a member of the board.")
+
+        reviewer = attrs.get('reviewer')
+        if reviewer and reviewer != board.user and reviewer not in board.members.all():
+            raise serializers.ValidationError("Reviewer must be a member of the board.")
+
+        return attrs
 
 class TaskDetailSerializer(TaskSerializer):
     assignee_id = serializers.PrimaryKeyRelatedField(read_only = True)
