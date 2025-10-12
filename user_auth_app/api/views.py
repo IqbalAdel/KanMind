@@ -1,13 +1,12 @@
 from rest_framework import generics, status
 from user_auth_app.models import UserProfile
 from .serializers import UserProfileSerializer, RegistrationSerializer, EmailAuthTokenSerializer
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token 
 from rest_framework.response import Response
 from rest_framework.authtoken.views import ObtainAuthToken
 from django.contrib.auth.models import User
-
 class UserProfileList(generics.ListCreateAPIView):
     queryset = UserProfile.objects.all()
     serializer_class = UserProfileSerializer
@@ -61,7 +60,7 @@ class RegistrationView(APIView):
         return Response(data)
     
 class EmailCheckView(APIView):
-    # permission_classes = [IsAuthenticated]  # ✅ only logged-in users
+    permission_classes = [IsAuthenticated] 
 
     def get(self, request):
         email = request.query_params.get('email')
