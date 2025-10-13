@@ -91,6 +91,7 @@ KanMind_project-Adel/
 │       ├── serializers.py        # Serializers for API endpoints
 │       ├── views.py              # API logic for CRUD operations
 │       ├── permissions.py        # Custom permission classes
+│       ├── urls-tasks.py         # api/tasks routes
 │       ├── urls.py               # App-specific routes
 │
 ├── KanMind_Project_Adel/     # Main Project settings
