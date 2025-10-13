@@ -1,4 +1,5 @@
 from rest_framework import serializers, status
+from rest_framework.response import Response
 from user_auth_app.models import UserProfile
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
@@ -35,13 +36,13 @@ class EmailAuthTokenSerializer(serializers.Serializer):
             try:
                 user = User.objects.get(email=email)
             except User.DoesNotExist:
-                raise serializers.ValidationError('Invalid email or password.', status=status.HTTP_400_BAD_REQUEST)
+                return Response({'Invalid email or password.'}, status=status.HTTP_400_BAD_REQUEST)
 
             user = authenticate(username=user.username, password=password)
             if not user:
-                raise serializers.ValidationError('Invalid email or password.', status=status.HTTP_400_BAD_REQUEST)
+                return Response({'Invalid username or password.'}, status=status.HTTP_400_BAD_REQUEST)
         else:
-            raise serializers.ValidationError('Must include "email" and "password".', status=status.HTTP_400_BAD_REQUEST)
+            return Response({'Must include "email" and "password".'}, status=status.HTTP_400_BAD_REQUEST)
 
         attrs['user'] = user
         return attrs
@@ -74,7 +75,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
        
         value = value.strip()
         if not value:
-            raise serializers.ValidationError("Username cannot be empty.", status=status.HTTP_400_BAD_REQUEST)
+            return Response({'Username cannot be empty.'}, status=status.HTTP_400_BAD_REQUEST)
         return value
 
     def validate_email(self, value):
@@ -90,7 +91,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
             value (string): email
         """            
         if User.objects.filter(email=value).exists():
-            raise serializers.ValidationError('Email already exists', status=status.HTTP_400_BAD_REQUEST)
+            return Response({'Email already exists'}, status=status.HTTP_400_BAD_REQUEST)
         return value
 
     def save(self):
@@ -107,7 +108,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
         fullname = self.validated_data['fullname']
 
         if pw != repeated_pw:
-            raise serializers.ValidationError({'error': 'passwords dont match'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'passwords dont match'}, status=status.HTTP_400_BAD_REQUEST)
         
         username = self.validated_data.get('username') or fullname
         account = User(email = self.validated_data['email'], username=username)

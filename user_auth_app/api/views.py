@@ -43,7 +43,8 @@ class CustomLoginView(ObtainAuthToken):
         else:
             data = serializer.errors
         
-        return Response(data)
+        return Response(data, status=status.HTTP_400_BAD_REQUEST)
+    
     
 
 class RegistrationView(APIView):
@@ -73,7 +74,7 @@ class RegistrationView(APIView):
         else:
             data = serializer.errors
         
-        return Response(data)
+        return Response(data, status.HTTP_400_BAD_REQUEST)
     
 class EmailCheckView(APIView):
     permission_classes = [IsAuthenticated] 
@@ -92,7 +93,7 @@ class EmailCheckView(APIView):
 
         if not email:
             return Response({"detail": "Email query parameter is required."},
-                            status=status.HTTP_401_UNAUTHORIZED)
+                            status=status.HTTP_400_BAD_REQUEST)
 
         try:
             data = {

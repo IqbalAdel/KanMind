@@ -5,7 +5,7 @@ from .serializers import BoardSerializer, TaskSerializer, CommentSerializer, Tas
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from .permissions import IsBoardMemberOrOwner, IsBoardMemberOrOwnerForComments , IsBoardMemberForTask    
 from django.db.models import Q
-from rest_framework.exceptions import NotFound
+from rest_framework.exceptions import NotFound, PermissionDenied
 
 class BoardsList(generics.ListCreateAPIView):
     queryset = Board.objects.all()
@@ -66,7 +66,18 @@ class TasksList(generics.ListCreateAPIView):
         """saves user as creator at POST request, necessary when checking for deletion of tasks
 
         """        
-        serializer.save(creator=self.request.user)
+        board_id = self.request.data.get('board')
+        user = self.request.user
+
+        try: 
+            board = Board.objects.get(id = board_id)
+        except Board.DoesNotExist:
+            raise NotFound('Board not found.')
+        
+        if user != board.user and user not in board.members.all():
+            raise PermissionDenied("You are not a member of the board.")
+        
+        serializer.save(creator=self.request.user, board=board)
 
 class TasksDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Task.objects.all()
@@ -89,20 +100,29 @@ class CommentsList(generics.ListCreateAPIView):
         try:
             task = Task.objects.get(pk=task_id)
         except Task.DoesNotExist:
-            return Comment.objects.none()
+            raise NotFound("Task not found.")
 
         board = task.board
-        if user == board.user or user in board.members.all():
-            return Comment.objects.filter(task=task)
-        return Comment.objects.none()
+        if user != board.user and user not in board.members.all():
+            raise PermissionDenied("You are not a member of the board.")
+        return Comment.objects.filter(task=task).order_by("created_at")
 
     def perform_create(self, serializer):
         """Saves user as author when creating a comment for a specific task
         """        
         task_id = self.kwargs['pk']
-        if not task_id:
-            raise NotFound(detail="Task ID not provided.")
-        serializer.save(author=self.request.user, task_id=task_id)
+        user = self.request.user
+
+        try:  
+            task = Task.objects.select_related('board').get(pk=task_id)
+        except Task.DoesNotExist:
+            raise NotFound('Task not found')
+
+        board = task.board
+        if user != board.user and user not in board.members.all():
+            raise PermissionDenied("You are not a member of the board.")
+        
+        serializer.save(author=user, task_id=task_id)
 
 class CommentsDetail(generics.RetrieveDestroyAPIView):
     serializer_class = CommentSerializer
@@ -125,7 +145,7 @@ class CommentsDetail(generics.RetrieveDestroyAPIView):
                 id=comment_id, task_id=task_id
             )
         except Comment.DoesNotExist:
-            raise Http404
+            raise NotFound('Comment not found')
 
         self.check_object_permissions(self.request, comment)
         return comment
