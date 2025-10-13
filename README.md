@@ -109,6 +109,42 @@ KanMind_project-Adel/
 └── README.md                 # This file
 
 ```
+---
+
+## 🔑 Authentication
+This project uses **Token Authentication**.
+After registering or logging in, you’ll receive a token like:
+``` json
+{
+  "token": "f2b2f69d3e314cbbd1a2b06a6fxyzabcd"
+}
+```
+Include it in your headers for all API requests.
+
+---
+
+## 🔗 Example API Endpoints
+
+| Method | Endpoint                    | Description                             |
+| ------ | --------------------------- | --------------------------------------- |
+| `POST` | `/api/register/`            | Register new user                       |
+| `POST` | `/api/login/`               | Log in and get token                    |
+| `GET`  | `/api/boards/`              | List all boards (user must be member)   |
+| `POST` | `/api/boards/`              | Create new board                        |
+| `GET`  | `/api/boards/<id>/`         | Board details including members & tasks |
+| `POST` | `/api/tasks/`               | Create a new task                       |
+| `GET`  | `/api/tasks/`               | List tasks for user’s boards            |
+| `POST` | `/api/tasks/<id>/comments/` | Add comment to a task                   |
+| `GET`  | `/api/email-check/<email>`  | Check if email is registered for a user |
 
 
+---
 
+## 🧪 Testing the API
+
+You can test all endpoints using:
+- Postman
+- Insomnia
+- Django’s built-in API browser
+
+---
