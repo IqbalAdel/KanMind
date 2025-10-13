@@ -1,10 +1,11 @@
 from django.http import Http404
 from rest_framework import generics
 from KanMind_app.models import Board, Task, Comment
-from .serializers import BoardSerializer, TaskSerializer, CommentSerializer, TaskDetailSerializer, BoardDetailSerializer
+from .serializers import BoardSerializer, TaskSerializer, CommentSerializer, TaskDetailSerializer,BoardUpdateSerializer, BoardDetailSerializer
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from .permissions import IsBoardMemberOrOwner, IsBoardMemberOrOwnerForComments , IsBoardMemberForTask    
 from django.db.models import Q
+from rest_framework.exceptions import NotFound
 
 class BoardsList(generics.ListCreateAPIView):
     queryset = Board.objects.all()
@@ -32,6 +33,16 @@ class BoardDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Board.objects.all()
     serializer_class = BoardDetailSerializer
     permission_classes = [IsAuthenticated ,IsBoardMemberOrOwner]
+
+    def get_serializer_class(self):
+        """returns specific serializers if its an update-reuqest or anything else
+
+        Returns:
+           serializer: returns a serializer to be used, depending on request method
+        """        
+        if self.request.method in ['PATCH', 'PUT']:
+            return BoardUpdateSerializer
+        return BoardDetailSerializer
 
 class TasksList(generics.ListCreateAPIView):
     serializer_class = TaskSerializer
@@ -89,6 +100,8 @@ class CommentsList(generics.ListCreateAPIView):
         """Saves user as author when creating a comment for a specific task
         """        
         task_id = self.kwargs['pk']
+        if not task_id:
+            raise NotFound(detail="Task ID not provided.")
         serializer.save(author=self.request.user, task_id=task_id)
 
 class CommentsDetail(generics.RetrieveDestroyAPIView):

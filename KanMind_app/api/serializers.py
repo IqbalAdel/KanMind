@@ -1,10 +1,13 @@
-from rest_framework import serializers
+from rest_framework import serializers, status
 from KanMind_app.models import Board, User, Task, Comment
 
 class MemberSerializer(serializers.ModelSerializer):
+    fullname = serializers.StringRelatedField(
+        source='username',  
+        read_only=True)
     class Meta:
         model = User
-        fields = ['id', 'email', 'username']
+        fields = ['id', 'email', 'fullname']
 
 
 class TaskSerializer(serializers.ModelSerializer):
@@ -49,33 +52,54 @@ class TaskSerializer(serializers.ModelSerializer):
         Returns:
             attrs: dictionary with task information
         """        
-        board = attrs.get('board')
         user = self.context['request'].user
 
+            # Use board from attrs if provided, otherwise from existing instance
+        board = attrs.get('board') or getattr(self.instance, 'board', None)
+
+        if not board:
+            raise serializers.ValidationError("Board is required for this task.", status=status.HTTP_404_NOT_FOUND)
+
         if user != board.user and user not in board.members.all():
-            raise serializers.ValidationError("You must be a member or owner of the board to create a task.")
+            raise serializers.ValidationError("You must be a member or owner of the board to create a task.", status=status.HTTP_403_FORBIDDEN)
  
         assignee = attrs.get('assignee')
         if assignee and assignee != board.user and assignee not in board.members.all():
-            raise serializers.ValidationError("Assignee must be a member of the board.")
+            raise serializers.ValidationError("Assignee must be a member of the board.", status=status.HTTP_403_FORBIDDEN)
 
         reviewer = attrs.get('reviewer')
         if reviewer and reviewer != board.user and reviewer not in board.members.all():
-            raise serializers.ValidationError("Reviewer must be a member of the board.")
+            raise serializers.ValidationError("Reviewer must be a member of the board.", status=status.HTTP_403_FORBIDDEN)
 
         return attrs
 
 class TaskDetailSerializer(TaskSerializer):
-    assignee_id = serializers.PrimaryKeyRelatedField(read_only = True)
-    reviewer_id = serializers.PrimaryKeyRelatedField(read_only = True)
+    assignee = MemberSerializer(read_only=True, required=False, allow_null=True)
+    reviewer = MemberSerializer(read_only=True, required=False, allow_null=True)
 
     class Meta: 
         model = Task
-        fields = ['title', 'description', 'status', 'priority','assignee_id', 'reviewer_id','due_date']
+        fields = ['title', 'description', 'status', 'priority','assignee_id', 'reviewer_id','assignee', 'reviewer','due_date']
 
+    def update(self, instance, validated_data):
+        """Only allows update or patch request for certain fields
+        
+        """        
+        allowed_fields = {'title', 'description', 'status', 'priority','assignee_id', 'reviewer_id', 'due_date'}
+        for field in list(validated_data.keys()):
+            if field not in allowed_fields:
+                validated_data.pop(field)
+
+        return super().update(instance, validated_data)
+    
+    # def to_representation(self, instance):
+    #     """Remove 'board' (the ID) from response view."""
+    #     data = super().to_representation(instance)
+    #     data.pop('board', None)
+    #     return data
 
 class CommentSerializer(serializers.ModelSerializer):
-    author = serializers.PrimaryKeyRelatedField(read_only=True)
+    author = serializers.StringRelatedField(read_only=True)
     created_at = serializers.DateTimeField(read_only=True)
     class Meta:
         model = Comment
@@ -136,7 +160,40 @@ class BoardSerializer(serializers.ModelSerializer):
 class BoardDetailSerializer(BoardSerializer):
     members = MemberSerializer(many=True, read_only=True)
     tasks = TaskSerializer(many=True, read_only=True)
+    owner_id = serializers.PrimaryKeyRelatedField(
+        source='user',  
+        read_only=True
+    )
 
     class Meta:
         model = Board
-        fields = ['id', 'title', 'user', 'members', 'tasks']
+        fields = ['id', 'title', 'owner_id', 'members', 'tasks']
+
+
+class BoardUpdateSerializer(serializers.ModelSerializer):
+    owner_data = MemberSerializer(source='user', read_only=True)
+    members_data = MemberSerializer(source='members', many=True, read_only=True)
+
+    class Meta:
+        model = Board
+        fields = ['id', 'title', 'members', 'owner_data', 'members_data']
+
+    def get_fields(self):
+        """Hide owner_data and members_data from API form input"""
+        fields = super().get_fields()
+        if self.context['request'].method in ['PATCH', 'PUT']:
+            fields['owner_data'].write_only = False
+            fields['members_data'].write_only = False
+        return fields
+    
+    def update(self, instance, validated_data):
+        """Only allows update or patch request for title and member fields
+        
+        """        
+        allowed_fields = {'title', 'members'}
+        for field in list(validated_data.keys()):
+            if field not in allowed_fields:
+                validated_data.pop(field)
+
+        return super().update(instance, validated_data)
+    
