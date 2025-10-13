@@ -72,6 +72,7 @@ class TaskSerializer(serializers.ModelSerializer):
             return Response({'Reviewer must be a member of the board.'}, status=status.HTTP_403_FORBIDDEN)
 
         return attrs
+    
 
 class TaskDetailSerializer(TaskSerializer):
     assignee = MemberSerializer(read_only=True, required=False, allow_null=True)
