@@ -10,7 +10,6 @@ class MemberSerializer(serializers.ModelSerializer):
 class TaskSerializer(serializers.ModelSerializer):
     assignee = MemberSerializer(read_only=True, required=False, allow_null=True)
     reviewer = MemberSerializer(read_only=True, required=False, allow_null=True)
-    # creator = MemberSerializer(read_only = True)
     assignee_id = serializers.PrimaryKeyRelatedField(
         queryset=User.objects.all(),
         source='assignee',
@@ -28,20 +27,34 @@ class TaskSerializer(serializers.ModelSerializer):
     comments_count = serializers.SerializerMethodField()
 
     def get_comments_count(self, obj):
+        """Counts number of comments on task
+
+        Returns:
+            int: number of comments
+        """        
         return obj.comments.count()
     class Meta: 
         model = Task
         fields = ['id', 'board', 'title', 'description', 'status', 'priority','assignee_id','reviewer_id', 'assignee', 'reviewer', 'due_date', 'comments_count']
 
     def validate(self, attrs):
+        """validates for membership of the user, assignee and reviewer on creation of task
+
+
+        Raises:
+            serializers.ValidationError: Creator of task must be owner or member
+            serializers.ValidationError: Only validate assignee/reviewer if provided, checks for membership
+            serializers.ValidationError: Only validate assignee/reviewer if provided, checks for membership
+
+        Returns:
+            attrs: dictionary with task information
+        """        
         board = attrs.get('board')
         user = self.context['request'].user
 
-        # Creator must be owner or member
         if user != board.user and user not in board.members.all():
             raise serializers.ValidationError("You must be a member or owner of the board to create a task.")
-
-        # Only validate assignee/reviewer if provided
+ 
         assignee = attrs.get('assignee')
         if assignee and assignee != board.user and assignee not in board.members.all():
             raise serializers.ValidationError("Assignee must be a member of the board.")
@@ -70,11 +83,10 @@ class CommentSerializer(serializers.ModelSerializer):
 
 
 class BoardSerializer(serializers.ModelSerializer):
-    member_ids = serializers.PrimaryKeyRelatedField(
+    members = serializers.PrimaryKeyRelatedField(
         queryset=User.objects.all(),
         many = True,
         write_only = True,
-        source = 'members'
     )
 
     member_count = serializers.SerializerMethodField()
@@ -88,16 +100,36 @@ class BoardSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Board
-        fields = ['id', 'title', 'member_ids', 'member_count', "ticket_count", "tasks_to_do_count", "tasks_high_prio_count", 'owner_id']
+        fields = ['id', 'title', 'members', 'member_count', "ticket_count", "tasks_to_do_count", "tasks_high_prio_count", 'owner_id']
 
     def get_member_count(self, obj):
+        """Counts number members
+
+        Returns:
+            int: number of members in board
+        """        
         return obj.members.count()
     
     def get_ticket_count(self, obj):
+        """Counts number tasks
+
+        Returns:
+            int: number of tasks in board
+        """
         return obj.tasks.count()
     def get_tasks_to_do_count(self, obj):
+        """Counts number tasks with status to-do
+
+        Returns:
+            int: number of tasks in board
+        """
         return obj.tasks.filter(priority__iexact='to-do').count()
     def get_tasks_high_prio_count(self, obj):
+        """Counts number tasks with high priority
+
+        Returns:
+            int: number of tasks in board
+        """
         return obj.tasks.filter(priority__iexact='high').count()
 
 

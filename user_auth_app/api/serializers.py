@@ -17,6 +17,17 @@ class EmailAuthTokenSerializer(serializers.Serializer):
     )
 
     def validate(self, attrs):
+        """validates check-email request for a given email
+
+        Raises:
+            serializers.ValidationError: checks if user with given mail exists
+            serializers.ValidationError: checks if user with username and password exist 
+            serializers.ValidationError: checks if both email and password were given
+
+        Returns:
+            attrs: dictionary 
+        """        
+
         email = attrs.get('email')
         password = attrs.get('password')
 
@@ -49,18 +60,48 @@ class RegistrationSerializer(serializers.ModelSerializer):
         }
     
     def validate_username(self, value):
-            """Allow spaces and strip leading/trailing whitespace."""
-            value = value.strip()
-            if not value:
-                raise serializers.ValidationError("Username cannot be empty.")
-            return value
+        """validates username
+
+        Args:
+            value (string): username
+
+        Raises:
+            serializers.ValidationError: if string is empty, raise
+
+        Returns:
+            value (string): valid username
+        """            
+       
+        value = value.strip()
+        if not value:
+            raise serializers.ValidationError("Username cannot be empty.")
+        return value
 
     def validate_email(self, value):
-            if User.objects.filter(email=value).exists():
-                raise serializers.ValidationError('Email already exists')
-            return value
+        """validates email, checks if user with email exists
+
+        Args:
+            value (string): email
+
+        Raises:
+            serializers.ValidationError: raise error, if email has already been used
+
+        Returns:
+            value (string): email
+        """            
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError('Email already exists')
+        return value
 
     def save(self):
+        """saves user account on registration
+
+        Raises:
+            serializers.ValidationError: password and repeated password don't match
+
+        Returns:
+            account: object with account information of user
+        """        
         pw = self.validated_data['password']
         repeated_pw = self.validated_data['repeated_password']
         fullname = self.validated_data['fullname']

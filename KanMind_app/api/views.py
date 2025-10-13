@@ -12,10 +12,19 @@ class BoardsList(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+        """Filters boards for only allowed boards
+
+        Returns:
+            object: all boards where the user is a member or owner
+        """        
         user = self.request.user
         return Board.objects.filter(Q(user=user) | Q(members=user)).distinct()
 
     def perform_create(self, serializer):
+        """saves user who sent POST request as board owner
+
+        """        
+
         board = serializer.save(user=self.request.user)
 
 
@@ -29,6 +38,12 @@ class TasksList(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated, IsBoardMemberForTask]
 
     def get_queryset(self):
+        """Filters for tasks where user is board-member or board-owner only
+
+        Returns:
+            object: all tasks where the user is a board-member or board-owner from
+        """        
+
         user = self.request.user
         return Task.objects.filter(
             board__members=user
@@ -37,6 +52,9 @@ class TasksList(generics.ListCreateAPIView):
         )
     
     def perform_create(self, serializer):
+        """saves user as creator at POST request, necessary when checking for deletion of tasks
+
+        """        
         serializer.save(creator=self.request.user)
 
 class TasksDetail(generics.RetrieveUpdateDestroyAPIView):
@@ -50,6 +68,11 @@ class CommentsList(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated, IsBoardMemberOrOwnerForComments]
 
     def get_queryset(self):
+        """Filters view for comments where user is a board-member or board-owner, through the task_id which is connected to the board object
+
+        Returns:
+            object: Comments where user is board-member or board-owner from
+        """        
         task_id = self.kwargs['pk']
         user = self.request.user
         try:
@@ -63,6 +86,8 @@ class CommentsList(generics.ListCreateAPIView):
         return Comment.objects.none()
 
     def perform_create(self, serializer):
+        """Saves user as author when creating a comment for a specific task
+        """        
         task_id = self.kwargs['pk']
         serializer.save(author=self.request.user, task_id=task_id)
 
@@ -71,6 +96,14 @@ class CommentsDetail(generics.RetrieveDestroyAPIView):
     permission_classes = [IsAuthenticated ,IsBoardMemberOrOwnerForComments]
 
     def get_object(self):
+        """Gets comment object for a specific comment id, and task_id and limits abaility to delete if user is not author, when rechecking object-permissions
+
+        Raises:
+            Http404: Comment doesn't exist
+
+        Returns:
+            comment: Comment object
+        """        
         task_id = self.kwargs['pk']
         comment_id = self.kwargs['comment_id']
 
@@ -89,6 +122,11 @@ class AssignedTasksList(generics.ListAPIView):
     permission_classes = [ IsAuthenticated]
 
     def get_queryset(self):
+        """Filters for tasks where user is assignee
+
+        Returns:
+            object: all tasks that user has been assigned to
+        """        
         user = self.request.user    
         return Task.objects.filter(assignee=user).select_related('board', 'assignee', 'reviewer')
 
@@ -98,6 +136,11 @@ class ReviewedTasksList(generics.ListAPIView):
     permission_classes = [ IsAuthenticated]
 
     def get_queryset(self):
+        """Filters for tasks where user is reviewer
+
+        Returns:
+            object: all tasks where user has been assigned as reviewer
+        """        
         user = self.request.user    
         return Task.objects.filter(reviewer=user).select_related('board', 'assignee', 'reviewer')
     
