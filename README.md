@@ -82,5 +82,33 @@ http://127.0.0.1:8000/
 ---
 
 ## 🧩 Project Structure
+```
+KanMind_project-Adel/
+│
+├── KanMind_app/              # Main Django app
+│   ├── models.py             # Board, Task, Comment models
+│   ├──api/
+│       ├── serializers.py        # Serializers for API endpoints
+│       ├── views.py              # API logic for CRUD operations
+│       ├── permissions.py        # Custom permission classes
+│       ├── urls.py               # App-specific routes
+│
+├── KanMind_Project_Adel/     # Main Project settings
+│   ├── settings.py           # Global configuration
+│   ├── urls.py               # Root URL routes
+│
+├── user_auth_app/              # User_Auth app
+    ├──api/
+│       ├── serializers.py        # Serializers for API endpoints
+│       ├── views.py              # API logic for authentication operations
+│       ├── permissions.py        # Custom permission classes
+│       ├── urls.py               # App-specific routes
+│
+├── manage.py                 # Django management script
+├── requirements.txt          # Dependencies list
+└── README.md                 # This file
+
+```
+
 
 
