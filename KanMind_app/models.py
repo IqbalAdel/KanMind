@@ -34,4 +34,5 @@ class Comment(models.Model):
     author = models.ForeignKey(User, on_delete=models.SET_NULL, related_name="author_comments",null=True, blank=True)
     content = models.TextField(blank=True, null=True)
     
-
+    class Meta:
+        ordering = ['created_at']

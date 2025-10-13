@@ -10,6 +10,7 @@ class MemberSerializer(serializers.ModelSerializer):
 class TaskSerializer(serializers.ModelSerializer):
     assignee = MemberSerializer(read_only=True, required=False, allow_null=True)
     reviewer = MemberSerializer(read_only=True, required=False, allow_null=True)
+    # creator = MemberSerializer(read_only = True)
     assignee_id = serializers.PrimaryKeyRelatedField(
         queryset=User.objects.all(),
         source='assignee',

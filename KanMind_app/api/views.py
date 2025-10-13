@@ -37,7 +37,7 @@ class TasksList(generics.ListCreateAPIView):
         )
     
     def perform_create(self, serializer):
-        serializer.save()
+        serializer.save(creator=self.request.user)
 
 class TasksDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Task.objects.all()
