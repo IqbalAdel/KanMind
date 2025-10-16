@@ -32,17 +32,23 @@ class EmailAuthTokenSerializer(serializers.Serializer):
         email = attrs.get('email')
         password = attrs.get('password')
 
-        if email and password:
-            try:
-                user = User.objects.get(email=email)
-            except User.DoesNotExist:
-                return Response({'Invalid email or password.'}, status=status.HTTP_400_BAD_REQUEST)
+        if not email or not password:
+            res = serializers.ValidationError({'detail': 'Must include "email" and "password".'})
+            res.status_code = 400
+            raise res
 
-            user = authenticate(username=user.username, password=password)
-            if not user:
-                return Response({'Invalid username or password.'}, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response({'Must include "email" and "password".'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            res = serializers.ValidationError({'detail': 'Email does not exist for a current user.'})
+            res.status_code = 404
+            raise res
+        user = authenticate(username=user.username, password=password)
+        if not user:
+            res = serializers.ValidationError({'detail': 'Invalid username or password.'}) 
+            res.status_code = 400
+            raise res       
+            
 
         attrs['user'] = user
         return attrs
@@ -75,7 +81,14 @@ class RegistrationSerializer(serializers.ModelSerializer):
        
         value = value.strip()
         if not value:
-            return Response({'Username cannot be empty.'}, status=status.HTTP_400_BAD_REQUEST)
+            res = serializers.ValidationError({'detail': 'Username cannot be empty.'}) 
+            res.status_code = 400
+            raise res
+        if User.objects.filter(username=value).exists():
+            res = serializers.ValidationError({'detail': 'Fullname already exists'}) 
+            res.status_code = 400
+            raise res
+        
         return value
 
     def validate_email(self, value):
@@ -91,7 +104,10 @@ class RegistrationSerializer(serializers.ModelSerializer):
             value (string): email
         """            
         if User.objects.filter(email=value).exists():
-            return Response({'Email already exists'}, status=status.HTTP_400_BAD_REQUEST)
+            res = serializers.ValidationError({'detail': 'Email already exists'}) 
+            res.status_code = 400
+            raise res
+
         return value
 
     def save(self):
@@ -108,7 +124,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
         fullname = self.validated_data['fullname']
 
         if pw != repeated_pw:
-            return Response({'passwords dont match'}, status=status.HTTP_400_BAD_REQUEST)
+            raise serializers.ValidationError({'detail': 'passwords dont match'}) 
         
         username = self.validated_data.get('username') or fullname
         account = User(email = self.validated_data['email'], username=username)

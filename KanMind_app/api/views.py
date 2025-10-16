@@ -5,7 +5,7 @@ from .serializers import BoardSerializer, TaskSerializer, CommentSerializer, Tas
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from .permissions import IsBoardMemberOrOwner, IsBoardMemberOrOwnerForComments , IsBoardMemberForTask    
 from django.db.models import Q
-from rest_framework.exceptions import NotFound, PermissionDenied
+from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
 
 class BoardsList(generics.ListCreateAPIView):
     queryset = Board.objects.all()
@@ -112,6 +112,10 @@ class CommentsList(generics.ListCreateAPIView):
         """        
         task_id = self.kwargs['pk']
         user = self.request.user
+        content = self.request.data.get("content", "").strip()
+
+        if not content:
+            raise ValidationError({'detail': 'Content cannot be empty.'})
 
         try:  
             task = Task.objects.select_related('board').get(pk=task_id)
@@ -119,6 +123,8 @@ class CommentsList(generics.ListCreateAPIView):
             raise NotFound('Task not found')
 
         board = task.board
+        if not board:
+            raise NotFound('Board not found')
         if user != board.user and user not in board.members.all():
             raise PermissionDenied("You are not a member of the board.")
         

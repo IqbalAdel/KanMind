@@ -59,17 +59,26 @@ class TaskSerializer(serializers.ModelSerializer):
         board = attrs.get('board') or getattr(self.instance, 'board', None)
 
         if not board:
-            return Response({'Board is required for this task.'}, status=status.HTTP_404_NOT_FOUND)
+            res = serializers.ValidationError({'detail': 'Board is required for this task or does not exist.'})
+            res.status_code = 404
+            raise res
 
         if user != board.user and user not in board.members.all():
-            return Response({'You must be a member of the board.'}, status=status.HTTP_403_FORBIDDEN)
+            res = serializers.ValidationError({'detail': 'You must be a member of the board.'})
+            res.status_code = 401
+            raise res
+        
         assignee = attrs.get('assignee')
         if assignee and assignee != board.user and assignee not in board.members.all():
-            return Response({'Assignee must be a member of the board.'}, status=status.HTTP_403_FORBIDDEN)
-
+            res = serializers.ValidationError({'detail': 'Assignee must be a member of the board.'})
+            res.status_code = 401
+            raise res
+        
         reviewer = attrs.get('reviewer')
         if reviewer and reviewer != board.user and reviewer not in board.members.all():
-            return Response({'Reviewer must be a member of the board.'}, status=status.HTTP_403_FORBIDDEN)
+            res = serializers.ValidationError({'detail': 'Reviewer must be a member of the board.'})
+            res.status_code = 401
+            raise res
 
         return attrs
     
@@ -103,7 +112,9 @@ class CommentSerializer(serializers.ModelSerializer):
 
     def validate_content(self, value):
         if not value or not value.strip():
-            raise serializers.ValidationError("Comment content cannot be empty.")
+            res = serializers.ValidationError("Comment content cannot be empty.")
+            res.status_code = 400
+            raise res
         return value
 
 

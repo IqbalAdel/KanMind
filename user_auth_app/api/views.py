@@ -40,10 +40,11 @@ class CustomLoginView(ObtainAuthToken):
                 'email': user.email,
                 'user_id': user.id,
             }
-        else:
+        else:   
             data = serializer.errors
-        
-        return Response(data, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'detail':data}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(data)
     
     
 
@@ -73,8 +74,9 @@ class RegistrationView(APIView):
             }
         else:
             data = serializer.errors
+            return Response({'detail': data}, status.HTTP_400_BAD_REQUEST)
         
-        return Response(data, status.HTTP_400_BAD_REQUEST)
+        return Response(data)
     
 class EmailCheckView(APIView):
     permission_classes = [IsAuthenticated] 
@@ -100,12 +102,13 @@ class EmailCheckView(APIView):
                 "id": user.id,
                 "email": user.email,
                 "fullname": user.username,
-            }
-            return Response(data, status=status.HTTP_200_OK)
-        
+            }        
         except User.DoesNotExist:
             return Response({"detail": "User not found."},
                             status=status.HTTP_404_NOT_FOUND) 
+        
+        return Response(data)
+        
 
 
     
