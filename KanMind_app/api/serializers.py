@@ -1,6 +1,8 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import serializers, status
 from KanMind_app.models import Board, User, Task, Comment
 from rest_framework.response import Response
+from rest_framework.exceptions import NotFound
 
 class MemberSerializer(serializers.ModelSerializer):
     fullname = serializers.StringRelatedField(
@@ -10,10 +12,19 @@ class MemberSerializer(serializers.ModelSerializer):
         model = User
         fields = ['id', 'email', 'fullname']
 
+class SafePrimaryKeyRelatedField(serializers.PrimaryKeyRelatedField):
+    def to_internal_value(self, data):
+        try:
+            return super().to_internal_value(data)
+        except serializers.ValidationError as exc:
+            if "does not exist" in str(exc.detail):
+                raise NotFound("Object not found.")
+            raise exc
 
 class TaskSerializer(serializers.ModelSerializer):
     assignee = MemberSerializer(read_only=True, required=False, allow_null=True)
     reviewer = MemberSerializer(read_only=True, required=False, allow_null=True)
+    board = SafePrimaryKeyRelatedField(queryset=Board.objects.all())
     assignee_id = serializers.PrimaryKeyRelatedField(
         queryset=User.objects.all(),
         source='assignee',
@@ -41,6 +52,7 @@ class TaskSerializer(serializers.ModelSerializer):
         model = Task
         fields = ['id', 'board', 'title', 'description', 'status', 'priority','assignee_id','reviewer_id', 'assignee', 'reviewer', 'due_date', 'comments_count']
 
+    
     def validate(self, attrs):
         """validates for membership of the user, assignee and reviewer on creation of task
 
@@ -55,13 +67,7 @@ class TaskSerializer(serializers.ModelSerializer):
         """        
         user = self.context['request'].user
 
-            # Use board from attrs if provided, otherwise from existing instance
         board = attrs.get('board') or getattr(self.instance, 'board', None)
-
-        if not board:
-            res = serializers.ValidationError({'detail': 'Board is required for this task or does not exist.'})
-            res.status_code = 404
-            raise res
 
         if user != board.user and user not in board.members.all():
             res = serializers.ValidationError({'detail': 'You must be a member of the board.'})

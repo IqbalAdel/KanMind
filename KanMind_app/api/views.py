@@ -6,6 +6,7 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticate
 from .permissions import IsBoardMemberOrOwner, IsBoardMemberOrOwnerForComments , IsBoardMemberForTask    
 from django.db.models import Q
 from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
+from django.shortcuts import get_object_or_404
 
 class BoardsList(generics.ListCreateAPIView):
     queryset = Board.objects.all()
@@ -66,11 +67,14 @@ class TasksList(generics.ListCreateAPIView):
         """saves user as creator at POST request, necessary when checking for deletion of tasks
 
         """        
-        board_id = self.request.data.get('board')
+        board_id = self.request.data.get("board")
         user = self.request.user
+        board = get_object_or_404(Board, pk=board_id)
 
         try: 
             board = Board.objects.get(id = board_id)
+            if not board:
+                raise NotFound('Board not found')
         except Board.DoesNotExist:
             raise NotFound('Board not found.')
         

@@ -40,11 +40,12 @@ class CustomLoginView(ObtainAuthToken):
                 'email': user.email,
                 'user_id': user.id,
             }
+            return Response(data, status=status.HTTP_200_OK)
         else:   
             data = serializer.errors
             return Response({'detail':data}, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response(data)
+        
     
     
 
@@ -61,6 +62,11 @@ class RegistrationView(APIView):
             Response: includes the token, fullname, email and user_id
         """
         serializer = RegistrationSerializer(data = request.data)
+        if User.objects.filter(username=request.data.get('fullname')).exists():
+            return Response(
+                {"detail": "Username already exists."},
+                status=status.HTTP_400_BAD_REQUEST
+    )
 
         data = {}
         if serializer.is_valid():
@@ -72,11 +78,13 @@ class RegistrationView(APIView):
                 'email': saved_account.email,
                 'user_id': saved_account.id,
             }
+            return Response(data, status=status.HTTP_201_CREATED)
         else:
-            data = serializer.errors
-            return Response({'detail': data}, status.HTTP_400_BAD_REQUEST)
+            data = serializer.errors        
+            return Response({'detail': data}, status=status.HTTP_400_BAD_REQUEST)
         
-        return Response(data)
+        
+    
     
 class EmailCheckView(APIView):
     permission_classes = [IsAuthenticated] 
