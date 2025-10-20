@@ -16,11 +16,6 @@ class EmailAuthTokenSerializer(serializers.Serializer):
         style={'input_type': 'password'},
         trim_whitespace=False
     )
-    repeated_password = serializers.CharField(
-        label="Password",
-        style={'input_type': 'password'},
-        trim_whitespace=False
-    )
 
     def validate(self, attrs):
         """validates check-email request for a given email
@@ -36,15 +31,12 @@ class EmailAuthTokenSerializer(serializers.Serializer):
 
         email = attrs.get('email')
         password = attrs.get('password')
-        repeated_password = attrs.get('repeated_password')
 
         if not email or not password:
             res = serializers.ValidationError({'detail': 'Must include "email" and "password".'})
             res.status_code = 400
             raise res
 
-        if password != repeated_password:
-            raise serializers.ValidationError({"detail": "Passwords do not match."})
         try:
             user = User.objects.get(email=email)
         except User.DoesNotExist:
