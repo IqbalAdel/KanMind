@@ -1,6 +1,6 @@
 from django.http import Http404
 from rest_framework import generics, status
-from kanmind_app.models import Board, Task, Comment
+from kan_mind_app.models import Board, Task, Comment
 from .serializers import BoardSerializer, TaskSerializer, CommentSerializer, TaskDetailSerializer,BoardUpdateSerializer, BoardDetailSerializer
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from .permissions import IsBoardMemberOrOwner, IsBoardMemberOrOwnerForComments , IsBoardMemberForTask    

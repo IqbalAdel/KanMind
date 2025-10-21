@@ -7,13 +7,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('kanmind_app', '0004_remove_task_assigne_id_remove_task_reviewer_id_and_more'),
+        ('kan_mind_app', '0004_remove_task_assigne_id_remove_task_reviewer_id_and_more'),
     ]
 
     operations = [
         migrations.AlterField(
             model_name='task',
             name='board',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='tasks', to='kanmind_app.board'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='tasks', to='kan_mind_app.board'),
         ),
     ]

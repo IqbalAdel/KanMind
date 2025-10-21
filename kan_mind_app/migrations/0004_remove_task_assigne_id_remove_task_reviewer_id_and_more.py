@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('kanmind_app', '0003_task'),
+        ('kan_mind_app', '0003_task'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 

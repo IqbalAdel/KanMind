@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('kanmind_app', '0005_alter_task_board'),
+        ('kan_mind_app', '0005_alter_task_board'),
     ]
 
     operations = [

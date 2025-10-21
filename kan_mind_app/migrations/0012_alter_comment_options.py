@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('kanmind_app', '0011_task_creator'),
+        ('kan_mind_app', '0011_task_creator'),
     ]
 
     operations = [
