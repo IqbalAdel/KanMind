@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('KanMind_app', '0008_alter_comment_task'),
+        ('kanmind_app', '0008_alter_comment_task'),
     ]
 
     operations = [

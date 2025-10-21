@@ -1,7 +1,12 @@
 from rest_framework.permissions import BasePermission, IsAuthenticated, SAFE_METHODS
 from ..models import Board, Task
+from django.shortcuts import get_object_or_404
+from rest_framework.exceptions import NotFound, PermissionDenied
 
-class IsBoardMemberOrOwner(BasePermission):     
+class IsBoardMemberOrOwner(BasePermission): 
+    """
+    Permission handles board-membership or ownership of the board
+    """    
     def has_object_permission(self, request, view, obj):
         """ Returns a boolean value depending on request method and user permission level, checks for detailed boards 
         Args:
@@ -21,6 +26,9 @@ class IsBoardMemberOrOwner(BasePermission):
         
 
 class IsBoardMemberOrOwnerForComments(BasePermission):
+    """
+    Permission handles board-membership or ownership of the board when handling comments
+    """
     def has_permission(self, request, view):
         """ Returns a boolean value depending on request method and user permission level, checks for comment GET or POST requests 
         Args:
@@ -43,7 +51,7 @@ class IsBoardMemberOrOwnerForComments(BasePermission):
                 task = Task.objects.select_related('board').get(id=task_id)
                 board = task.board
             except Task.DoesNotExist:
-                return False
+                raise NotFound('Task not found')
 
             return (
                 request.user == board.user
@@ -62,7 +70,6 @@ class IsBoardMemberOrOwnerForComments(BasePermission):
         Returns:
             [bool]: tests for user authentication and if user is board owner, or if he is comment author
         """
-
         board = obj.task.board
         if request.method in SAFE_METHODS:
             return bool(request.user == board.user or request.user in board.members.all())
@@ -72,6 +79,9 @@ class IsBoardMemberOrOwnerForComments(BasePermission):
         return False
 
 class IsBoardMemberForTask(BasePermission):
+    """
+    Permission handles board-membership or ownership of the board when handling tasks
+    """
     def has_object_permission(self, request, view, obj):
         """ Returns a boolean value depending on request method and user permission level , checks for detailed tasks
         Args:

@@ -7,13 +7,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('KanMind_app', '0009_alter_comment_created_at'),
+        ('kanmind_app', '0009_alter_comment_created_at'),
     ]
 
     operations = [
         migrations.AlterField(
             model_name='task',
             name='board',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='tasks', to='KanMind_app.board'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='tasks', to='kanmind_app.board'),
         ),
     ]

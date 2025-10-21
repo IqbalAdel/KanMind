@@ -85,7 +85,7 @@ http://127.0.0.1:8000/
 ```
 KanMind_project-Adel/
 │
-├── KanMind_app/              # Main Django app
+├── kanmind_app/              # Main Django app
 │   ├── models.py             # Board, Task, Comment models
 │   ├──api/
 │       ├── serializers.py        # Serializers for API endpoints
@@ -94,7 +94,7 @@ KanMind_project-Adel/
 │       ├── urls-tasks.py         # api/tasks routes
 │       ├── urls.py               # App-specific routes
 │
-├── KanMind_Project_Adel/     # Main Project settings
+├── kanmind_core/     # Main Project settings
 │   ├── settings.py           # Global configuration
 │   ├── urls.py               # Root URL routes
 │

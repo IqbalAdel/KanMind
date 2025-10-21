@@ -4,12 +4,29 @@ from user_auth_app.models import UserProfile
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 
+
 class UserProfileSerializer(serializers.ModelSerializer):
+    """
+    Serializer for creating User Profiles.
+    Handles validation and serialization of User data.
+
+    Fields:
+        user (id): User id of registered users
+    """
     class Meta:
         model = UserProfile
         fields = ['user']
 
+
 class EmailAuthTokenSerializer(serializers.Serializer):
+    """
+    Serializer for loggin in users.
+    Handles validation and serialization of User data.
+
+    Fields:
+        email (str): Email address of the user. Must be unique.
+        password (str): User's password. Write-only.
+    """
     email = serializers.EmailField()
     password = serializers.CharField(
         label="Password",
@@ -28,7 +45,6 @@ class EmailAuthTokenSerializer(serializers.Serializer):
         Returns:
             attrs: dictionary 
         """        
-
         email = attrs.get('email')
         password = attrs.get('password')
 
@@ -48,13 +64,22 @@ class EmailAuthTokenSerializer(serializers.Serializer):
             res = serializers.ValidationError({'detail': 'Invalid username or password.'}) 
             res.status_code = 400
             raise res     
-          
-            
-
         attrs['user'] = user
         return attrs
 
+
 class RegistrationSerializer(serializers.ModelSerializer):
+    """
+    Serializer for registering new users.
+    Handles validation, creation, and serialization of User data.
+
+    Fields:
+        id (int): Read-only. Unique identifier of the user.
+        fullname (str): Full name of the user.
+        email (str): Email address of the user. Must be unique.
+        password (str): User's password. Write-only.
+        repeated_password (str): Confirmation of the password. Write-only; must match `password`.
+    """
     repeated_password = serializers.CharField(write_only = True)
     fullname = serializers.CharField(write_only=True)
 
@@ -79,7 +104,6 @@ class RegistrationSerializer(serializers.ModelSerializer):
         Returns:
             value (string): valid username
         """            
-       
         value = value.strip()
         if not value:
             res = serializers.ValidationError({'detail': 'Username cannot be empty.'}) 
@@ -121,7 +145,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
 
         Returns:
             account: object with account information of user
-        """        
+        """       
         pw = self.validated_data['password']
         repeated_pw = self.validated_data['repeated_password']
         fullname = self.validated_data['fullname']
@@ -138,4 +162,3 @@ class RegistrationSerializer(serializers.ModelSerializer):
         account.save()
         profile = UserProfile.objects.create(user=account)
         return account
-    

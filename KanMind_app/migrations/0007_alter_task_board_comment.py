@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('KanMind_app', '0006_rename_assigne_task_assignee'),
+        ('kanmind_app', '0006_rename_assigne_task_assignee'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
@@ -16,7 +16,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='task',
             name='board',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='board', to='KanMind_app.board'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='board', to='kanmind_app.board'),
         ),
         migrations.CreateModel(
             name='Comment',
@@ -25,7 +25,7 @@ class Migration(migrations.Migration):
                 ('created_at', models.DateField()),
                 ('content', models.TextField(blank=True, null=True)),
                 ('author', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='author_comments', to=settings.AUTH_USER_MODEL)),
-                ('task', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='task', to='KanMind_app.task')),
+                ('task', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='task', to='kanmind_app.task')),
             ],
         ),
     ]

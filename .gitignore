@@ -137,4 +137,4 @@ GitHub.sublime-settings
 !.vscode/extensions.json 
 .history
 
-.KanMind_Project_Adel/settings.py
+.kanmind_core/settings.py

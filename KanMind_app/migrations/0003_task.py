@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('KanMind_app', '0002_alter_board_members'),
+        ('kanmind_app', '0002_alter_board_members'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
@@ -23,7 +23,7 @@ class Migration(migrations.Migration):
                 ('priority', models.CharField(max_length=100)),
                 ('due_date', models.DateField()),
                 ('assigne_id', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='assignee', to=settings.AUTH_USER_MODEL)),
-                ('board', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='KanMind_app.board')),
+                ('board', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='kanmind_app.board')),
                 ('reviewer_id', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='reviewer', to=settings.AUTH_USER_MODEL)),
             ],
         ),

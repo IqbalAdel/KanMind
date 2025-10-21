@@ -7,15 +7,29 @@ from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework.authtoken.views import ObtainAuthToken
 from django.contrib.auth.models import User
+
 class UserProfileList(generics.ListCreateAPIView):
     queryset = UserProfile.objects.all()
     serializer_class = UserProfileSerializer
 
+
 class UserProfileDetail(generics.RetrieveUpdateDestroyAPIView):
+    """
+    API endpoint for profiles of specific users.
+
+    Returns the user data of specific primary key.
+    """
     queryset = UserProfile.objects.all()
     serializer_class = UserProfileSerializer
 
+
 class CustomLoginView(ObtainAuthToken):
+    """
+    API endpoint for obtaining authentication tokens for users.
+
+    Inherits from DRF's `ObtainAuthToken` and can be customized to add
+    additional logic if needed (e.g., returning user details alongside the token).
+    """
     permission_classes = [AllowAny]
     serializer_class = EmailAuthTokenSerializer
 
@@ -45,11 +59,13 @@ class CustomLoginView(ObtainAuthToken):
             data = serializer.errors
             return Response({'detail':data}, status=status.HTTP_400_BAD_REQUEST)
 
-        
-    
-    
 
 class RegistrationView(APIView):
+    """
+    API endpoint for registering new users.
+
+    Handles creation of user accounts, including username validation. Returns the created user data.
+    """
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -81,9 +97,7 @@ class RegistrationView(APIView):
             return Response(data, status=status.HTTP_201_CREATED)
         else:
             data = serializer.errors        
-            return Response({'detail': data}, status=status.HTTP_400_BAD_REQUEST)
-        
-        
+            return Response({'detail': data}, status=status.HTTP_400_BAD_REQUEST) 
     
     
 class EmailCheckView(APIView):
@@ -116,7 +130,3 @@ class EmailCheckView(APIView):
                             status=status.HTTP_404_NOT_FOUND) 
         
         return Response(data)
-        
-
-
-    
