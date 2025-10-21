@@ -7,16 +7,7 @@ class IsBoardMemberOrOwner(BasePermission):
     """
     Permission handles board-membership or ownership of the board
     """    
-    def has_object_permission(self, request, view, obj):
-        """ Returns a boolean value depending on request method and user permission level, checks for detailed boards 
-        Args:
-            request ([type])
-            view ([type])
-            obj ([type])
-
-        Returns:
-            [bool]: tests for user authentication and if user is board owner
-        """             
+    def has_object_permission(self, request, view, obj):             
         if request.method in SAFE_METHODS: 
             return bool(request.user in obj.members.all() or request.user == obj.user)
         elif request.method in ['PATCH', 'PUT']:
@@ -30,15 +21,6 @@ class IsBoardMemberOrOwnerForComments(BasePermission):
     Permission handles board-membership or ownership of the board when handling comments
     """
     def has_permission(self, request, view):
-        """ Returns a boolean value depending on request method and user permission level, checks for comment GET or POST requests 
-        Args:
-            request ([type])
-            view ([type])
-            obj ([type])
-
-        Returns:
-            [bool]: tests for user authentication and if user is board owner or member for POST comment creation
-        """
         if request.method in SAFE_METHODS:
             return request.user and request.user.is_authenticated
 
@@ -61,15 +43,6 @@ class IsBoardMemberOrOwnerForComments(BasePermission):
         return True
     
     def has_object_permission(self, request, view, obj):
-        """ Returns a boolean value depending on request method and user permission level, checks for detailed comments
-        Args:
-            request ([type])
-            view ([type])
-            obj ([type])
-
-        Returns:
-            [bool]: tests for user authentication and if user is board owner, or if he is comment author
-        """
         board = obj.task.board
         if request.method in SAFE_METHODS:
             return bool(request.user == board.user or request.user in board.members.all())
@@ -83,15 +56,6 @@ class IsBoardMemberForTask(BasePermission):
     Permission handles board-membership or ownership of the board when handling tasks
     """
     def has_object_permission(self, request, view, obj):
-        """ Returns a boolean value depending on request method and user permission level , checks for detailed tasks
-        Args:
-            request ([type])
-            view ([type])
-            obj ([type])
-
-        Returns:
-            [bool]: tests for user authentication and if user is board owner, or if he is comment author
-        """
         board = obj.board
         user = request.user
 

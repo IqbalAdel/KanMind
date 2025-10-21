@@ -78,29 +78,13 @@ class TaskSerializer(serializers.ModelSerializer):
     )
     comments_count = serializers.SerializerMethodField()
 
-    def get_comments_count(self, obj):
-        """Counts number of comments on task
-
-        Returns:
-            int: number of comments
-        """        
+    def get_comments_count(self, obj): 
         return obj.comments.count()
     class Meta: 
         model = Task
         fields = ['id', 'board', 'title', 'description', 'status', 'priority','assignee_id','reviewer_id', 'assignee', 'reviewer', 'due_date', 'comments_count']
 
-    def validate(self, attrs):
-        """validates for membership of the user, assignee and reviewer on creation of task
-
-
-        Raises:
-            serializers.ValidationError: Creator of task must be owner or member
-            serializers.ValidationError: Only validate assignee/reviewer if provided, checks for membership
-            serializers.ValidationError: Only validate assignee/reviewer if provided, checks for membership
-
-        Returns:
-            attrs: dictionary with task information
-        """        
+    def validate(self, attrs):     
         user = self.context['request'].user
 
         board = attrs.get('board') or getattr(self.instance, 'board', None)
@@ -144,10 +128,7 @@ class TaskDetailSerializer(TaskSerializer):
         model = Task
         fields = ['id','title', 'description', 'status', 'priority','assignee_id', 'reviewer_id','assignee', 'reviewer','due_date']
 
-    def update(self, instance, validated_data):
-        """Only allows update or patch request for certain fields
-        
-        """        
+    def update(self, instance, validated_data):   
         allowed_fields = {'title', 'description', 'status', 'priority','assignee_id', 'reviewer_id', 'due_date'}
         for field in list(validated_data.keys()):
             if field not in allowed_fields:
@@ -215,34 +196,16 @@ class BoardSerializer(serializers.ModelSerializer):
         model = Board
         fields = ['id', 'title', 'members', 'member_count', "ticket_count", "tasks_to_do_count", "tasks_high_prio_count", 'owner_id']
 
-    def get_member_count(self, obj):
-        """Counts number members
-
-        Returns:
-            int: number of members in board
-        """        
+    def get_member_count(self, obj):      
         return obj.members.count()
     
     def get_ticket_count(self, obj):
-        """Counts number tasks
-
-        Returns:
-            int: number of tasks in board
-        """
         return obj.tasks.count()
+    
     def get_tasks_to_do_count(self, obj):
-        """Counts number tasks with status to-do
-
-        Returns:
-            int: number of tasks in board
-        """
         return obj.tasks.filter(priority__iexact='to-do').count()
+    
     def get_tasks_high_prio_count(self, obj):
-        """Counts number tasks with high priority
-
-        Returns:
-            int: number of tasks in board
-        """
         return obj.tasks.filter(priority__iexact='high').count()
 
 
@@ -290,17 +253,13 @@ class BoardUpdateSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'members', 'owner_data', 'members_data']
 
     def get_fields(self):
-        """Hide owner_data and members_data from API form input"""
         fields = super().get_fields()
         if self.context['request'].method in ['PATCH', 'PUT']:
             fields['owner_data'].write_only = False
             fields['members_data'].write_only = False
         return fields
     
-    def update(self, instance, validated_data):
-        """Only allows update or patch request for title and member fields
-        
-        """        
+    def update(self, instance, validated_data):        
         allowed_fields = {'title', 'members'}
         for field in list(validated_data.keys()):
             if field not in allowed_fields:

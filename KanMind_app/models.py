@@ -2,18 +2,13 @@ from django.db import models
 from django.contrib.auth.models import User
 
 
-
-
 class Board(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=100)
     members = models.ManyToManyField(User, related_name="members")
-    
 
     def __str__(self):
         return self.title
-    
- 
 
 
 class Task(models.Model):

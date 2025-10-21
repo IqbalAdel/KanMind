@@ -34,14 +34,6 @@ class CustomLoginView(ObtainAuthToken):
     serializer_class = EmailAuthTokenSerializer
 
     def post(self, request):
-        """function for POST request using a token for authentication when loggin in
-
-        Args:
-            request (_type_): 
-
-        Returns:
-            Response: includes the token, fullname, email and user_id
-        """        
         serializer = self.serializer_class(data = request.data)
 
         data = {}
@@ -69,14 +61,6 @@ class RegistrationView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        """function for POST request using a token for authentication when registering as a user
-
-        Args:
-            request (_type_): 
-
-        Returns:
-            Response: includes the token, fullname, email and user_id
-        """
         serializer = RegistrationSerializer(data = request.data)
         if User.objects.filter(username=request.data.get('fullname')).exists():
             return Response(
@@ -103,15 +87,7 @@ class RegistrationView(APIView):
 class EmailCheckView(APIView):
     permission_classes = [IsAuthenticated] 
 
-    def get(self, request):
-        """checks if a given email is already registered for a user
-
-        Args:
-            request (_type_):   
-
-        Returns:
-            response: Contains id, email and fullname of user
-        """        
+    def get(self, request):   
         email = request.query_params.get('email')
         user = User.objects.get(email=email)
 
